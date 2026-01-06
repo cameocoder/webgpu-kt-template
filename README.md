@@ -6,3 +6,5 @@ This example renders a simple quad, a camera can be rotated around using touch g
 I recommend to install a [WGSL plugin](https://plugins.jetbrains.com/plugin/18110-wgsl-support) for Android Studio if you want to play with shaders.
 
 P.S. Thanks to the [article](https://blog.androiddevapps.com/posts/getting-started-with-webgpu-on-android/) for the inspiration.
+
+P.S.S. Compose Multiplatform template + Rust wgpu can be found [here](https://github.com/ShashlikMap/WgpuKmp-Template)
