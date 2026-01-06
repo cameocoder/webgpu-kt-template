@@ -45,8 +45,11 @@ import dev.romainguy.kotlin.math.Float3
 import dev.romainguy.kotlin.math.Float4
 import dev.romainguy.kotlin.math.rotation
 
+/**
+ * Wrapper around androidx.webgpu
+ */
 class WebGpuAPI {
-    companion object Companion {
+    companion object {
         const val WEBGPU_C_BUNDLED = "webgpu_c_bundled"
 
         val GL_TO_WGPU = floatArrayOf(

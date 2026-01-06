@@ -9,6 +9,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 
+/**
+ * Connects [SurfaceView] with [WebGpuAPI]
+ */
 class WebGPUSurfaceView(context: Context, private val api: WebGpuAPI) : SurfaceView(context) {
     private val coroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 

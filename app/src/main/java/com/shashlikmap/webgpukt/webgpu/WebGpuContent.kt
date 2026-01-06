@@ -1,4 +1,4 @@
-package com.shashlikmap.webgpukt
+package com.shashlikmap.webgpukt.webgpu
 
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
@@ -11,25 +11,24 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
-import com.shashlikmap.webgpukt.webgpu.WebGPUSurfaceView
-import com.shashlikmap.webgpukt.webgpu.WebGpuAPI
+import androidx.lifecycle.compose.LocalLifecycleOwner
 
 @Composable
 fun WebGPUView() {
-    val renderer = remember { WebGpuAPI() }
-    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+    val api = remember { WebGpuAPI() }
+    val lifecycleOwner = LocalLifecycleOwner.current
 
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event >= Lifecycle.Event.ON_STOP) {
-                renderer.reset()
+                api.reset()
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
 
         onDispose {
             lifecycleOwner.lifecycle.removeObserver(observer)
-            renderer.reset()
+            api.reset()
         }
     }
 
@@ -38,12 +37,12 @@ fun WebGPUView() {
             .fillMaxSize()
             .pointerInput(Unit) {
                 detectDragGestures { _, dragAmount ->
-                    renderer.rotationAngle -= dragAmount.x / 5.0f
+                    api.rotationAngle -= dragAmount.x / 5.0f
                 }
             }) {
         AndroidView(
             factory = { context ->
-                WebGPUSurfaceView(context, renderer)
+                WebGPUSurfaceView(context, api)
             },
             modifier = Modifier.fillMaxSize()
         )
