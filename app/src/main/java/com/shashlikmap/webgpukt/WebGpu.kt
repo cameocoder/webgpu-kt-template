@@ -1,5 +1,6 @@
 package com.shashlikmap.webgpukt
 
+import android.content.Context
 import android.util.Log
 import android.view.Surface
 import androidx.compose.foundation.layout.Box
@@ -39,16 +40,6 @@ class WebGPURenderer {
     private var renderPipeline: GPURenderPipeline? = null
     private var isInitialized = false
 
-    private val shaderCode = """
-        @vertex fn vertexMain(@builtin(vertex_index) i : u32) ->
-              @builtin(position) vec4f {
-                const pos = array(vec2f(0, 1), vec2f(-1, -1), vec2f(1, -1));
-                return vec4f(pos[i], 0, 1);
-            }
-        @fragment fn fragmentMain() -> @location(0) vec4f {
-            return vec4f(1, 0, 0, 1);
-        }
-    """.trimIndent()
 
     suspend fun initialize() {
         if (isInitialized) return
@@ -74,7 +65,7 @@ class WebGPURenderer {
         }
     }
 
-    fun createSurface(nativeSurface: Surface, width: Int, height: Int) {
+    fun createSurface(context: Context, nativeSurface: Surface, width: Int, height: Int) {
         if (!isInitialized) {
             Log.e("WebGPU", "Cannot create surface - not initialized!")
             return
@@ -98,7 +89,7 @@ class WebGPURenderer {
             Log.d("WebGPU", "Surface created: ${surface != null}")
 
             configureSurface(width, height)
-            createRenderPipeline()
+            createRenderPipeline(context)
 
             Log.d("WebGPU", "Surface setup complete!")
         } catch (e: Exception) {
@@ -137,7 +128,7 @@ class WebGPURenderer {
         }
     }
 
-    private fun createRenderPipeline() {
+    private fun createRenderPipeline(context: Context) {
         val currentDevice = device ?: return
         val currentSurface = surface ?: return
         val currentAdapter = adapter ?: return
@@ -145,8 +136,9 @@ class WebGPURenderer {
         try {
             Log.d("WebGPU", "Creating render pipeline...")
 
+            val shader = context.resources.openRawResource(R.raw.shader).bufferedReader().readText()
             val shaderModuleDescriptor = GPUShaderModuleDescriptor().apply {
-                shaderSourceWGSL = GPUShaderSourceWGSL(shaderCode)
+                shaderSourceWGSL = GPUShaderSourceWGSL(shader)
             }
 
             val module = currentDevice.createShaderModule(shaderModuleDescriptor)
@@ -201,7 +193,7 @@ class WebGPURenderer {
 
             renderPassEncoder.apply {
                 setPipeline(currentRenderPipeline)
-                draw(vertexCount = 3)
+                draw(vertexCount = 6)
                 end()
             }
 
@@ -272,7 +264,7 @@ fun WebGPUView() {
                                 Log.d("WebGPU", "Surface dimensions: ${width}x${height}")
 
                                 if (width > 0 && height > 0) {
-                                    renderer.createSurface(holder.surface, width, height)
+                                    renderer.createSurface(context, holder.surface, width, height)
 
                                     renderJob = launch {
                                         Log.d("WebGPU", "Starting render loop")
@@ -298,7 +290,7 @@ fun WebGPUView() {
                         ) {
                             Log.d("WebGPU", "Surface changed: ${width}x${height}")
                             if (width > 0 && height > 0) {
-                                renderer.createSurface(holder.surface, width, height)
+                                renderer.createSurface(context, holder.surface, width, height)
                             }
                         }
 
