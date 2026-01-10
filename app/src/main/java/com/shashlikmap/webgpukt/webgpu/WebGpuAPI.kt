@@ -35,14 +35,13 @@ import androidx.webgpu.GPUSurface
 import androidx.webgpu.GPUSurfaceConfiguration
 import androidx.webgpu.GPUSurfaceDescriptor
 import androidx.webgpu.GPUSurfaceSourceAndroidNativeWindow
-import androidx.webgpu.GPUVertexAttribute
 import androidx.webgpu.GPUVertexBufferLayout
 import androidx.webgpu.GPUVertexState
 import androidx.webgpu.InstanceFeatureName
 import androidx.webgpu.LoadOp
 import androidx.webgpu.ShaderStage
 import androidx.webgpu.StoreOp
-import androidx.webgpu.VertexFormat
+import androidx.webgpu.VertexFormat.Companion.Float32x3
 import androidx.webgpu.VertexStepMode
 import androidx.webgpu.helper.Util
 import com.shashlikmap.webgpukt.R
@@ -79,6 +78,8 @@ class WebGpuAPI {
 
         val INITIAL_EYE = Float4(0.0f, 0.0f, 5.0f, 1.0f)
 
+        // TODO Code gen to struct prototype?
+        val SHADER_STRUCT = arrayOf(Float32x3, Float32x3)
         val QUAD = floatArrayOf(
             /*vertex*/ -1.0f, -1.0f, 0.0f, /*color*/1.0f, 1.0f, 1.0f,
             /*vertex*/ -1.0f, 1.0f, 0.0f, /*color*/1.0f, 1.0f, 1.0f,
@@ -187,20 +188,10 @@ class WebGpuAPI {
             entryPoint = "fragmentMain"
         )
 
-        // TODO Auto generate based on data
         val vertexBufferLayout = GPUVertexBufferLayout(
-            arrayStride = 24,
+            arrayStride = SHADER_STRUCT.byteSize,
             stepMode = VertexStepMode.Vertex,
-            attributes = arrayOf(
-                GPUVertexAttribute(
-                    format = VertexFormat.Float32x3, offset = 0, shaderLocation = 0
-                ),
-                GPUVertexAttribute(
-                    format = VertexFormat.Float32x3, offset = 12
-                    /**Float32x3 size*/
-                    , shaderLocation = 1
-                )
-            )
+            attributes = SHADER_STRUCT.gpuVertexAttributes
         )
 
         val renderPipelineDescriptor = GPURenderPipelineDescriptor(
