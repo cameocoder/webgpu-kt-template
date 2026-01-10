@@ -18,4 +18,7 @@ private const val ALIGNMENT = 4L
 val FloatArray.paddedSize: Long
     get() = padded((size * Float.SIZE_BYTES).toLong())
 
+val ByteBuffer.paddedSize: Long
+    get() = padded((remaining()).toLong())
+
 private fun padded(dataSize: Long) = (dataSize + 3) and -ALIGNMENT

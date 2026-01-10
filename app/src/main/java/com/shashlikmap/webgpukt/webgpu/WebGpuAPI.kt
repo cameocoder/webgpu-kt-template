@@ -35,11 +35,15 @@ import androidx.webgpu.GPUSurface
 import androidx.webgpu.GPUSurfaceConfiguration
 import androidx.webgpu.GPUSurfaceDescriptor
 import androidx.webgpu.GPUSurfaceSourceAndroidNativeWindow
+import androidx.webgpu.GPUVertexAttribute
+import androidx.webgpu.GPUVertexBufferLayout
 import androidx.webgpu.GPUVertexState
 import androidx.webgpu.InstanceFeatureName
 import androidx.webgpu.LoadOp
 import androidx.webgpu.ShaderStage
 import androidx.webgpu.StoreOp
+import androidx.webgpu.VertexFormat
+import androidx.webgpu.VertexStepMode
 import androidx.webgpu.helper.Util
 import com.shashlikmap.webgpukt.R
 import dev.romainguy.kotlin.math.Float3
@@ -75,6 +79,15 @@ class WebGpuAPI {
 
         val INITIAL_EYE = Float4(0.0f, 0.0f, 5.0f, 1.0f)
 
+        val QUAD = floatArrayOf(
+            /*vertex*/ -1.0f, -1.0f, 0.0f, /*color*/1.0f, 1.0f, 1.0f,
+            /*vertex*/ -1.0f, 1.0f, 0.0f, /*color*/1.0f, 1.0f, 1.0f,
+            /*vertex*/ 1.0f, -1.0f, 0.0f, /*color*/1.0f, 1.0f, 1.0f,
+            /*vertex*/ -1.0f, 1.0f, 0.0f, /*color*/0.0f, 1.0f, 1.0f,
+            /*vertex*/ 1.0f, 1.0f, 0.0f, /*color*/0.0f, 1.0f, 1.0f,
+            /*vertex*/ 1.0f, -1.0f, 0.0f, /*color*/0.0f, 1.0f, 1.0f,
+        )
+
         init {
             System.loadLibrary(WEBGPU_C_BUNDLED)
         }
@@ -88,6 +101,8 @@ class WebGpuAPI {
     private var isPrepared = false
 
     var rotationAngle = 0.0f
+
+    private var quadVertexBuffer: GPUBuffer? = null
     private var globalUniformBuffer: GPUBuffer? = null
     private var globalUniformBindGroupLayout: GPUBindGroupLayout? = null
     private var globalUniformBindGroup: GPUBindGroup? = null
@@ -106,6 +121,8 @@ class WebGpuAPI {
         gpuDevice = gpuAdapter?.requestDevice()
 
         createGlobalUniform()
+        createQuadVertexBuffer()
+
         isPrepared = true
     }
 
@@ -170,10 +187,27 @@ class WebGpuAPI {
             entryPoint = "fragmentMain"
         )
 
+        // TODO Auto generate based on data
+        val vertexBufferLayout = GPUVertexBufferLayout(
+            arrayStride = 24,
+            stepMode = VertexStepMode.Vertex,
+            attributes = arrayOf(
+                GPUVertexAttribute(
+                    format = VertexFormat.Float32x3, offset = 0, shaderLocation = 0
+                ),
+                GPUVertexAttribute(
+                    format = VertexFormat.Float32x3, offset = 12
+                    /**Float32x3 size*/
+                    , shaderLocation = 1
+                )
+            )
+        )
+
         val renderPipelineDescriptor = GPURenderPipelineDescriptor(
             vertex = GPUVertexState(
                 module = module,
-                entryPoint = "vertexMain"
+                entryPoint = "vertexMain",
+                buffers = arrayOf(vertexBufferLayout)
             ),
             fragment = fragmentState,
             layout = currentDevice.createPipelineLayout(
@@ -217,8 +251,21 @@ class WebGpuAPI {
         )
     }
 
+    private fun createQuadVertexBuffer() {
+        val currentDevice = gpuDevice ?: return
+
+        quadVertexBuffer = currentDevice.createBufferInit(
+            GPUBufferDescriptorInit(
+                usage = BufferUsage.Vertex,
+                content = QUAD.toByteBuffer(),
+            )
+        )
+    }
+
     fun update() {
         val currentDevice = gpuDevice ?: return
+        globalUniformBuffer ?: return
+
         updateViewProjMatrix(rotationAngle)
 
         currentDevice.queue.writeBuffer(
@@ -271,11 +318,13 @@ class WebGpuAPI {
         renderPassEncoder.apply {
             setPipeline(currentRenderPipeline)
             setBindGroup(0, globalUniformBindGroup!!)
+            setVertexBuffer(0, quadVertexBuffer!!)
             draw(vertexCount = 6)
             end()
         }
 
         val commands = commandEncoder.finish()
+
         currentDevice.queue.submit(arrayOf(commands))
 
         currentSurface.present()

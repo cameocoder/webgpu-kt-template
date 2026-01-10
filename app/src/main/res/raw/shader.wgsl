@@ -4,29 +4,23 @@ struct Global {
 @group(0) @binding(0)
 var<uniform> global: Global;
 
+struct VertexInput {
+    @location(0) position: vec3<f32>,
+    @location(1) color: vec3<f32>,
+}
+
 struct VertexOutput {
     @builtin(position) clip_position: vec4<f32>,
-    @location(1) r_color: f32,
+    @location(1) color: vec3<f32>,
 }
-const quad = array(
-    vec3f(-1.0, -1.0, 0.0),
-    vec3f(-1.0, 1.0, 0.0),
-    vec3f(1.0, -1.0, 0.0),
-    vec3f(-1.0, 1.0, 0.0),
-    vec3f(1.0, 1.0, 0.0),
-    vec3f(1.0, -1.0, 0.0));
 
-@vertex fn vertexMain(@builtin(vertex_index) index : u32) -> VertexOutput {
+@vertex fn vertexMain(model: VertexInput) -> VertexOutput {
     var out: VertexOutput;
-    out.clip_position = global.view_proj * vec4<f32>(quad[index], 1.0);
-    if(index >=3) {
-        out.r_color = 0.0;
-    } else {
-        out.r_color = 1.0;
-    }
+    out.clip_position = global.view_proj * vec4<f32>(model.position.xyz, 1.0);
+    out.color = model.color;
     return out;
 }
 
 @fragment fn fragmentMain(in: VertexOutput) -> @location(0) vec4<f32> {
-    return vec4f(in.r_color, 1.0, 1.0, 1.0);
+    return vec4(in.color.rgb, 1.0);
 }
