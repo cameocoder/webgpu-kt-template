@@ -1,7 +1,13 @@
 # webgpu-kt-template
 A complete Android app example/template that uses [androidx.webgpu](https://developer.android.com/jetpack/androidx/releases/webgpu) library.
 
-This example renders a simple quad, a camera can be rotated around using touch gesture.
+The repository serves as a starting point for Android developers who want to explore using WebGPU for high-performance graphics and computation within a familiar Kotlin/Android environment. WebGPU is designed to be the modern successor to older APIs like OpenGL ES.
+
+This example renders a simple quad, a camera can be rotated around using touch gesture. It also demostrates how to work with:
+- WebGPU configuration + integration with Compose UI
+- Matrices calculation
+- Creating GPU buffers, both for uniform and vertices purposes
+- _Antialiasing + depth features are in progress_
 
 <img width="200" alt="Screenshot_20260107_000323" src="https://github.com/user-attachments/assets/48bb97af-3d79-48b1-b0dc-e713ab4dd2c0" />
 
