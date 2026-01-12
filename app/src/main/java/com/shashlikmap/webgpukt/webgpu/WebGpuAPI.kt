@@ -93,7 +93,8 @@ class WebGpuAPI {
         val SHADER_STRUCT = arrayOf(Float32x3, Float32x4)
 
         private const val QUAD_ALPHA = 1.0f
-        val QUAD =
+
+        val GEOMETRY =
             listOf(
                 Vertex(
                     position = Vec3(-1.0f, -1.0f, 0.0f),
@@ -283,7 +284,7 @@ class WebGpuAPI {
         quadVertexBuffer = currentDevice.createBufferInit(
             GPUBufferDescriptorInit(
                 usage = BufferUsage.Vertex,
-                content = QUAD.toByteBuffer(),
+                content = GEOMETRY.toByteBuffer(),
             )
         )
     }
@@ -345,7 +346,7 @@ class WebGpuAPI {
             setPipeline(currentRenderPipeline)
             setBindGroup(0, globalUniformBindGroup!!)
             setVertexBuffer(0, quadVertexBuffer!!)
-            draw(vertexCount = 6)
+            draw(vertexCount = GEOMETRY.size)
             end()
         }
 

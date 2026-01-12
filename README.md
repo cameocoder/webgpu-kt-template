@@ -7,6 +7,7 @@ This example renders a simple quad, a camera can be rotated around using touch g
 - WebGPU configuration + integration with Compose UI
 - Matrices calculation
 - Creating GPU buffers, both for uniform and vertices purposes
+- A few [tweaks](https://hackmd.io/@agent10/r16ntkfSbg) around androidx.webgpu
 - _Antialiasing + depth features are in progress_
 
 <img width="200" alt="Screenshot_20260107_000323" src="https://github.com/user-attachments/assets/48bb97af-3d79-48b1-b0dc-e713ab4dd2c0" />
