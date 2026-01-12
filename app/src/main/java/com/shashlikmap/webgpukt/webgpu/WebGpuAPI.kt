@@ -14,6 +14,7 @@ import androidx.webgpu.GPUBindGroupEntry
 import androidx.webgpu.GPUBindGroupLayout
 import androidx.webgpu.GPUBindGroupLayoutDescriptor
 import androidx.webgpu.GPUBindGroupLayoutEntry
+import androidx.webgpu.GPUBlendState
 import androidx.webgpu.GPUBuffer
 import androidx.webgpu.GPUBufferBindingLayout
 import androidx.webgpu.GPUBufferDescriptor
@@ -42,9 +43,19 @@ import androidx.webgpu.LoadOp
 import androidx.webgpu.ShaderStage
 import androidx.webgpu.StoreOp
 import androidx.webgpu.VertexFormat.Companion.Float32x3
+import androidx.webgpu.VertexFormat.Companion.Float32x4
 import androidx.webgpu.VertexStepMode
 import androidx.webgpu.helper.Util
 import com.shashlikmap.webgpukt.R
+import com.shashlikmap.webgpukt.webgpu.utils.GPUBufferDescriptorInit
+import com.shashlikmap.webgpukt.webgpu.utils.Vec3
+import com.shashlikmap.webgpukt.webgpu.utils.Vec4
+import com.shashlikmap.webgpukt.webgpu.utils.alphaBlending
+import com.shashlikmap.webgpukt.webgpu.utils.byteSize
+import com.shashlikmap.webgpukt.webgpu.utils.createBufferInit
+import com.shashlikmap.webgpukt.webgpu.utils.gpuVertexAttributes
+import com.shashlikmap.webgpukt.webgpu.utils.paddedSize
+import com.shashlikmap.webgpukt.webgpu.utils.toByteBuffer
 import dev.romainguy.kotlin.math.Float3
 import dev.romainguy.kotlin.math.Float4
 import dev.romainguy.kotlin.math.rotation
@@ -79,15 +90,36 @@ class WebGpuAPI {
         val INITIAL_EYE = Float4(0.0f, 0.0f, 5.0f, 1.0f)
 
         // TODO Code gen to struct prototype?
-        val SHADER_STRUCT = arrayOf(Float32x3, Float32x3)
-        val QUAD = floatArrayOf(
-            /*vertex*/ -1.0f, -1.0f, 0.0f, /*color*/1.0f, 1.0f, 1.0f,
-            /*vertex*/ -1.0f, 1.0f, 0.0f, /*color*/1.0f, 1.0f, 1.0f,
-            /*vertex*/ 1.0f, -1.0f, 0.0f, /*color*/1.0f, 1.0f, 1.0f,
-            /*vertex*/ -1.0f, 1.0f, 0.0f, /*color*/0.0f, 1.0f, 1.0f,
-            /*vertex*/ 1.0f, 1.0f, 0.0f, /*color*/0.0f, 1.0f, 1.0f,
-            /*vertex*/ 1.0f, -1.0f, 0.0f, /*color*/0.0f, 1.0f, 1.0f,
-        )
+        val SHADER_STRUCT = arrayOf(Float32x3, Float32x4)
+
+        private const val QUAD_ALPHA = 1.0f
+        val QUAD =
+            listOf(
+                Vertex(
+                    position = Vec3(-1.0f, -1.0f, 0.0f),
+                    color = Vec4(1.0f, 1.0f, 1.0f, QUAD_ALPHA)
+                ),
+                Vertex(
+                    position = Vec3(-1.0f, 1.0f, 0.0f),
+                    color = Vec4(1.0f, 1.0f, 1.0f, QUAD_ALPHA)
+                ),
+                Vertex(
+                    position = Vec3(1.0f, -1.0f, 0.0f),
+                    color = Vec4(1.0f, 1.0f, 1.0f, QUAD_ALPHA)
+                ),
+                Vertex(
+                    position = Vec3(-1.0f, 1.0f, 0.0f),
+                    color = Vec4(0.0f, 1.0f, 1.0f, QUAD_ALPHA)
+                ),
+                Vertex(
+                    position = Vec3(1.0f, 1.0f, 0.0f),
+                    color = Vec4(0.0f, 1.0f, 1.0f, QUAD_ALPHA)
+                ),
+                Vertex(
+                    position = Vec3(1.0f, -1.0f, 0.0f),
+                    color = Vec4(0.0f, 1.0f, 1.0f, QUAD_ALPHA)
+                )
+            )
 
         init {
             System.loadLibrary(WEBGPU_C_BUNDLED)
@@ -181,7 +213,10 @@ class WebGpuAPI {
         val capabilities = currentSurface.getCapabilities(currentAdapter)
         val textureFormat = capabilities.formats.firstOrNull() ?: return
 
-        val colorTargetState = GPUColorTargetState(format = textureFormat)
+        val colorTargetState = GPUColorTargetState(
+            format = textureFormat,
+            blend = GPUBlendState().alphaBlending
+        )
         val fragmentState = GPUFragmentState(
             module = module,
             targets = arrayOf(colorTargetState),

@@ -1,4 +1,4 @@
-package com.shashlikmap.webgpukt.webgpu
+package com.shashlikmap.webgpukt.webgpu.utils
 
 import androidx.webgpu.BufferUsage
 import androidx.webgpu.GPUBuffer
